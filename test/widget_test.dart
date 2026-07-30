@@ -10,10 +10,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pipora_pay_helper/app/app.dart';
 
 void main() {
-  testWidgets('shows the welcome page', (WidgetTester tester) async {
+  testWidgets('shows the credit card recommendation page', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const App());
+    await tester.pumpAndSettle();
 
     expect(find.text('Pipora Pay Helper'), findsOneWidget);
-    expect(find.text('Welcome to Pipora Pay Helper'), findsOneWidget);
+    expect(find.text('Find the Best Credit Card'), findsOneWidget);
+    expect(find.text('Enter store name'), findsOneWidget);
+    expect(find.text('U Bear Credit Card'), findsOneWidget);
   });
 }
