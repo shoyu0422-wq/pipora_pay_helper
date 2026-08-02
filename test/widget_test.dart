@@ -17,8 +17,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Pipora Pay Helper'), findsOneWidget);
-    expect(find.text('Find the Best Credit Card'), findsOneWidget);
-    expect(find.text('Enter store name'), findsOneWidget);
-    expect(find.text('U Bear Credit Card'), findsOneWidget);
+    expect(find.text('找出最優惠的付款方式'), findsOneWidget);
+    expect(find.text('輸入商店名稱'), findsOneWidget);
+    expect(find.text('LINE Pay'), findsOneWidget);
+    expect(find.text('CUBE 信用卡'), findsOneWidget);
   });
 }

@@ -1,0 +1,10 @@
+[
+  {"id":"line_pay","name":"LINE Pay","type":"mobile_wallet","supportedCards":["cathay_cube","ctbc_line_pay"],"icon":"chat","description":"Pay with a linked card through LINE Pay."},
+  {"id":"apple_pay","name":"Apple Pay","type":"mobile_wallet","supportedCards":["cathay_cube","taipei_fubon_j","hsbc_cashback_signature"],"icon":"phone_iphone","description":"Tap to pay with a supported card on Apple devices."},
+  {"id":"google_pay","name":"Google Pay","type":"mobile_wallet","supportedCards":["taishin_gogo","esun_ubear","hsbc_cashback_signature"],"icon":"android","description":"Tap to pay with a supported card on Android devices."},
+  {"id":"jko_pay","name":"\u8857\u53e3\u652f\u4ed8","type":"mobile_wallet","supportedCards":["hsbc_live_plus","taishin_gogo","taipei_fubon_j"],"icon":"account_balance_wallet","description":"A mobile wallet for eligible local payments."},
+  {"id":"px_pay","name":"\u5168\u652f\u4ed8","type":"mobile_wallet","supportedCards":["sinopac_dawho","cathay_cube","esun_ubear"],"icon":"payments","description":"A mobile wallet for participating merchants."},
+  {"id":"plus_pay","name":"\u5168\u76c8+PAY","type":"mobile_wallet","supportedCards":["esun_pi_wallet","ctbc_line_pay"],"icon":"wallet","description":"A mobile wallet for participating merchants."},
+  {"id":"easy_wallet","name":"\u60a0\u904a\u4ed8","type":"mobile_wallet","supportedCards":["taipei_fubon_j","first_ileo","taishin_flygo"],"icon":"directions_transit","description":"A wallet for transit and participating merchants."},
+  {"id":"icash_pay","name":"icash Pay","type":"mobile_wallet","supportedCards":["cathay_cube","esun_ubear","union_bank_icash"],"icon":"credit_card","description":"A wallet for participating iCash merchants."}
+]

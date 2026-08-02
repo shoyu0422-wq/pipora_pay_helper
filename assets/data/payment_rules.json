@@ -1,0 +1,9 @@
+[
+  {"merchantKeyword":"7-11","paymentMethodId":"line_pay","bonusCashback":2},
+  {"merchantKeyword":"\u661f\u5df4\u514b","paymentMethodId":"apple_pay","bonusCashback":1},
+  {"merchantKeyword":"\u5168\u5bb6","paymentMethodId":"jko_pay","bonusCashback":3},
+  {"merchantKeyword":"\u5168\u806f","paymentMethodId":"px_pay","bonusCashback":2},
+  {"merchantKeyword":"\u5bb6\u6a02\u798f","paymentMethodId":"plus_pay","bonusCashback":2},
+  {"merchantKeyword":"\u53f0\u7063\u9ad8\u9435","paymentMethodId":"easy_wallet","bonusCashback":1},
+  {"merchantKeyword":"\u840a\u723e\u5bcc","paymentMethodId":"icash_pay","bonusCashback":1}
+]

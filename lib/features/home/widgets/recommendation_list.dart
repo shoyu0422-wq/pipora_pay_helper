@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:pipora_pay_helper/features/home/widgets/credit_card_tile.dart';
-import 'package:pipora_pay_helper/models/credit_card.dart';
+import 'package:pipora_pay_helper/features/home/widgets/payment_recommendation_tile.dart';
+import 'package:pipora_pay_helper/models/payment_recommendation.dart';
 
 class RecommendationList extends StatelessWidget {
   const RecommendationList({
     super.key,
-    required this.creditCards,
-    this.onCardTap,
+    required this.recommendations,
+    this.onRecommendationTap,
   });
 
-  final List<CreditCard> creditCards;
-  final ValueChanged<CreditCard>? onCardTap;
+  final List<PaymentRecommendation> recommendations;
+  final ValueChanged<PaymentRecommendation>? onRecommendationTap;
 
   @override
   Widget build(BuildContext context) {
-    final topRecommendations = creditCards.take(3).toList();
+    final topRecommendations = recommendations.take(3).toList();
 
     return Column(
       children: [
         for (var index = 0; index < topRecommendations.length; index++) ...[
-          CreditCardTile(
-            creditCard: topRecommendations[index],
+          PaymentRecommendationTile(
+            recommendation: topRecommendations[index],
             rank: index + 1,
             isHighlighted: index == 0,
-            onTap: onCardTap == null
+            onTap: onRecommendationTap == null
                 ? null
-                : () => onCardTap!(topRecommendations[index]),
+                : () => onRecommendationTap!(topRecommendations[index]),
           ),
           if (index < topRecommendations.length - 1) const SizedBox(height: 16),
         ],

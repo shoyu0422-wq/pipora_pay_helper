@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 
 class StoreSearchBar extends StatelessWidget {
-  const StoreSearchBar({super.key, required this.controller});
+  const StoreSearchBar({
+    super.key,
+    required this.controller,
+    required this.hintText,
+  });
 
   final TextEditingController controller;
+  final String hintText;
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +16,7 @@ class StoreSearchBar extends StatelessWidget {
       controller: controller,
       decoration: InputDecoration(
         border: OutlineInputBorder(),
-        hintText: 'Enter store name',
+        hintText: hintText,
         prefixIcon: Icon(Icons.store_outlined),
       ),
     );

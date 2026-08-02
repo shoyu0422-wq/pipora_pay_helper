@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pipora_pay_helper/l10n/app_localizations.dart';
 import 'package:pipora_pay_helper/models/credit_card.dart';
 
 class CardDetailPage extends StatelessWidget {
@@ -10,9 +11,10 @@ class CardDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Card Details')),
+      appBar: AppBar(title: Text(l10n.cardDetails)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -49,7 +51,7 @@ class CardDetailPage extends StatelessWidget {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 20),
-                          Text('Cashback', style: textTheme.labelLarge),
+                          Text(l10n.cashback, style: textTheme.labelLarge),
                           const SizedBox(height: 4),
                           Text(
                             '${_cashbackRate(creditCard.cashbackRate)}%',
@@ -66,21 +68,29 @@ class CardDetailPage extends StatelessWidget {
                   Card(
                     child: Column(
                       children: [
-                        _DetailTile(label: 'Bank', value: creditCard.bankName),
-                        const Divider(height: 1),
-                        _DetailTile(label: 'Card', value: creditCard.cardName),
-                        const Divider(height: 1),
                         _DetailTile(
-                          label: 'Monthly limit',
-                          value: _monthlyLimit(creditCard.monthlyLimit),
+                          label: l10n.bank,
+                          value: creditCard.bankName,
                         ),
                         const Divider(height: 1),
                         _DetailTile(
-                          label: 'Registration required',
-                          value: creditCard.needRegistration ? 'Yes' : 'No',
+                          label: l10n.creditCard,
+                          value: creditCard.cardName,
                         ),
                         const Divider(height: 1),
-                        _DetailTile(label: 'Notes', value: creditCard.notes),
+                        _DetailTile(
+                          label: l10n.monthlyLimit,
+                          value: _monthlyLimit(creditCard.monthlyLimit, l10n),
+                        ),
+                        const Divider(height: 1),
+                        _DetailTile(
+                          label: l10n.registrationRequired,
+                          value: creditCard.needRegistration
+                              ? l10n.yes
+                              : l10n.no,
+                        ),
+                        const Divider(height: 1),
+                        _DetailTile(label: l10n.notes, value: creditCard.notes),
                       ],
                     ),
                   ),
@@ -101,8 +111,8 @@ class CardDetailPage extends StatelessWidget {
     return cashbackRate.toString();
   }
 
-  String _monthlyLimit(int monthlyLimit) {
-    return monthlyLimit == 0 ? 'No monthly limit' : 'NT\$$monthlyLimit';
+  String _monthlyLimit(int monthlyLimit, AppLocalizations l10n) {
+    return monthlyLimit == 0 ? l10n.noLimit : 'NT\$$monthlyLimit';
   }
 }
 

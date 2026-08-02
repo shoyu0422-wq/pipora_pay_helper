@@ -3,8 +3,9 @@ import 'package:pipora_pay_helper/features/card_detail/card_detail_page.dart';
 import 'package:pipora_pay_helper/features/home/widgets/recommendation_list.dart';
 import 'package:pipora_pay_helper/features/home/widgets/search_bar.dart';
 import 'package:pipora_pay_helper/features/home/widgets/search_button.dart';
-import 'package:pipora_pay_helper/models/credit_card.dart';
+import 'package:pipora_pay_helper/models/payment_recommendation.dart';
 import 'package:pipora_pay_helper/services/recommendation_service.dart';
+import 'package:pipora_pay_helper/l10n/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,7 +17,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _storeController = TextEditingController();
   final _recommendationService = RecommendationService();
-  List<CreditCard> _recommendedCards = const [];
+  List<PaymentRecommendation> _recommendations = const [];
 
   @override
   void initState() {
@@ -36,16 +37,17 @@ class _HomePageState extends State<HomePage> {
     }
 
     setState(() {
-      _recommendedCards = _recommendationService.recommend(
+      _recommendations = _recommendationService.recommend(
         _storeController.text,
       );
     });
   }
 
-  void _showCardDetails(CreditCard creditCard) {
+  void _showCardDetails(PaymentRecommendation recommendation) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => CardDetailPage(creditCard: creditCard),
+        builder: (context) =>
+            CardDetailPage(creditCard: recommendation.creditCard),
       ),
     );
   }
@@ -57,13 +59,14 @@ class _HomePageState extends State<HomePage> {
     }
 
     setState(() {
-      _recommendedCards = _recommendationService.recommend('7-11');
+      _recommendations = _recommendationService.recommend('7-11');
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Pipora Pay Helper')),
@@ -78,7 +81,7 @@ class _HomePageState extends State<HomePage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Find the Best Credit Card',
+                    l10n.homeTitle,
                     style: textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -86,19 +89,22 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Search a store and get the best credit card recommendation.',
+                    l10n.homeSubtitle,
                     style: textTheme.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-                  StoreSearchBar(controller: _storeController),
+                  StoreSearchBar(
+                    controller: _storeController,
+                    hintText: l10n.searchHint,
+                  ),
                   const SizedBox(height: 16),
-                  SearchButton(onPressed: _search),
+                  SearchButton(label: l10n.search, onPressed: _search),
                   const SizedBox(height: 32),
-                  if (_recommendedCards.isNotEmpty)
+                  if (_recommendations.isNotEmpty)
                     RecommendationList(
-                      creditCards: _recommendedCards,
-                      onCardTap: _showCardDetails,
+                      recommendations: _recommendations,
+                      onRecommendationTap: _showCardDetails,
                     ),
                 ],
               ),
