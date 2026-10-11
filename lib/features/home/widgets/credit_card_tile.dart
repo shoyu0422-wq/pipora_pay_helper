@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pipora_pay_helper/l10n/app_localizations.dart';
 import 'package:pipora_pay_helper/models/credit_card.dart';
 
 class CreditCardTile extends StatelessWidget {
@@ -19,6 +20,7 @@ class CreditCardTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context);
 
     return Card(
       color: isHighlighted ? colorScheme.primaryContainer : null,
@@ -59,7 +61,7 @@ class CreditCardTile extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              Text('Cashback', style: textTheme.labelLarge),
+              Text(l10n.cashback, style: textTheme.labelLarge),
               const SizedBox(height: 4),
               Text(
                 '${_cashbackRate(creditCard.cashbackRate)}%',
@@ -69,7 +71,7 @@ class CreditCardTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Text('Reward', style: textTheme.labelLarge),
+              Text(l10n.reward, style: textTheme.labelLarge),
               const SizedBox(height: 4),
               Text(
                 creditCard.rewardDescription,

@@ -23,6 +23,14 @@ class RewardRule {
   final bool newCustomerOnly;
   final String notes;
 
+  String get usageKey =>
+      '$cardId|$merchantKeyword|${_dateKey(startDate)}|${_dateKey(endDate)}';
+
+  static String _dateKey(DateTime date) =>
+      '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
+
   factory RewardRule.fromJson(Map<String, dynamic> json) {
     return RewardRule(
       cardId: json['cardId'] as String,

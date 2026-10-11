@@ -5,21 +5,27 @@ import 'package:pipora_pay_helper/models/credit_card.dart';
 import 'package:pipora_pay_helper/models/payment_method.dart';
 import 'package:pipora_pay_helper/models/payment_recommendation.dart';
 import 'package:pipora_pay_helper/models/payment_rule.dart';
+import 'package:pipora_pay_helper/models/payment_transaction.dart';
+import 'package:pipora_pay_helper/models/merchant_rule.dart';
 import 'package:pipora_pay_helper/models/reward_rule.dart';
 import 'package:pipora_pay_helper/services/card_repository.dart';
+import 'package:pipora_pay_helper/services/merchant_rule_repository.dart';
 import 'package:pipora_pay_helper/services/payment_method_repository.dart';
 import 'package:pipora_pay_helper/services/payment_rule_repository.dart';
 import 'package:pipora_pay_helper/services/reward_rule_repository.dart';
+import 'package:pipora_pay_helper/services/transaction_repository.dart';
 
 class RecommendationService {
-  static const _l10n = AppLocalizations(Locale('zh', 'TW'));
-
   RecommendationService({
+    Locale locale = const Locale('zh', 'TW'),
     CardRepository? cardRepository,
     PaymentMethodRepository? paymentMethodRepository,
     PaymentRuleRepository? paymentRuleRepository,
     RewardRuleRepository? rewardRuleRepository,
-  }) : _cardRepository = cardRepository ?? CardRepository(),
+    this.merchantRuleRepository,
+    this.transactionRepository,
+  }) : _l10n = AppLocalizations(locale),
+       _cardRepository = cardRepository ?? CardRepository(),
        _paymentMethodRepository =
            paymentMethodRepository ?? PaymentMethodRepository(),
        _paymentRuleRepository =
@@ -30,32 +36,99 @@ class RecommendationService {
   final PaymentMethodRepository _paymentMethodRepository;
   final PaymentRuleRepository _paymentRuleRepository;
   final RewardRuleRepository _rewardRuleRepository;
+  final MerchantRuleRepository? merchantRuleRepository;
+  final TransactionRepository? transactionRepository;
+  AppLocalizations _l10n;
   List<CreditCard> _cards = const [];
   List<PaymentMethod> _paymentMethods = const [];
   List<PaymentRule> _paymentRules = const [];
   List<RewardRule> _rewardRules = const [];
+  List<MerchantRule> _merchantRules = const [];
+  List<PaymentTransaction> _transactions = const [];
   bool _isReady = false;
 
   bool get isReady => _isReady;
+  bool get hasOfferData => _rewardRules.isNotEmpty;
+
+  void setLocale(Locale locale) {
+    _l10n = AppLocalizations(locale);
+  }
+
+  List<PaymentTransaction> get transactions => List.unmodifiable(_transactions);
+
+  double get currentMonthReward =>
+      TransactionLedger(_transactions).totalRewardFor(DateTime.now());
+
+  Future<void> recordTransaction(PaymentTransaction transaction) async {
+    final repository = transactionRepository;
+    if (repository == null) {
+      throw StateError('Transaction storage is not configured.');
+    }
+    await repository.save(transaction);
+    _transactions = [
+      for (final item in _transactions)
+        if (item.id != transaction.id) item,
+      transaction,
+    ];
+  }
+
+  bool hasKnownStore(String storeName) {
+    final normalizedStore = storeName.toLowerCase();
+    if (normalizedStore.trim().isEmpty) return false;
+    return _merchantRules.any(
+          (rule) => normalizedStore.contains(rule.keyword.toLowerCase()),
+        ) ||
+        _rewardRules.any(
+          (rule) =>
+              normalizedStore.contains(rule.merchantKeyword.toLowerCase()),
+        ) ||
+        _paymentRules.any(
+          (rule) =>
+              normalizedStore.contains(rule.merchantKeyword.toLowerCase()),
+        );
+  }
+
+  bool hasExpiredOffer(String storeName, {DateTime? today}) {
+    final date = today ?? DateTime.now();
+    if (storeName.trim().isEmpty) return false;
+    return _rewardRules.any(
+      (rule) =>
+          storeName.toLowerCase().contains(
+            rule.merchantKeyword.toLowerCase(),
+          ) &&
+          rule.endDate.isBefore(DateTime(date.year, date.month, date.day)),
+    );
+  }
 
   Future<void> loadCards() async {
     _cards = await _cardRepository.getAllCards();
     _paymentMethods = await _paymentMethodRepository.getAllPaymentMethods();
     _paymentRules = await _paymentRuleRepository.getAllPaymentRules();
     _rewardRules = await _rewardRuleRepository.getAllRewardRules();
+    _merchantRules = await merchantRuleRepository?.getAllRules() ?? const [];
+    _transactions =
+        await transactionRepository?.getAllTransactions() ?? const [];
     _isReady = true;
   }
 
-  List<PaymentRecommendation> recommend(String storeName) {
+  List<PaymentRecommendation> recommend(
+    String storeName, {
+    double? spendAmount,
+    DateTime? today,
+  }) {
     if (!isReady) {
       throw StateError('Recommendation data has not been loaded.');
     }
 
+    final normalizedStore = storeName.toLowerCase();
     final matchingPaymentRules = _paymentRules
-        .where((rule) => storeName.contains(rule.merchantKeyword))
+        .where(
+          (rule) =>
+              normalizedStore.contains(rule.merchantKeyword.toLowerCase()),
+        )
         .toList();
     final recommendations = <PaymentRecommendation>[];
-    final today = DateTime.now();
+    final currentDate = today ?? DateTime.now();
 
     for (final paymentMethod in _paymentMethods) {
       final paymentBonus = _paymentBonus(
@@ -71,7 +144,7 @@ class RecommendationService {
         final rewardRule = _activeRewardRuleFor(
           creditCard.id,
           storeName,
-          today,
+          currentDate,
         );
         if (rewardRule == null) {
           continue;
@@ -90,19 +163,51 @@ class RecommendationService {
               rewardRule,
             ),
             rewardRule: rewardRule,
+            usedMonthlyReward: TransactionLedger(
+              _transactions,
+            ).usedRewardFor(rewardRule.usageKey, currentDate),
           ),
         );
       }
     }
 
     recommendations.sort((first, second) {
-      final cashbackComparison = second.totalCashback.compareTo(
-        first.totalCashback,
+      final firstReward = spendAmount == null
+          ? first.totalCashback
+          : first.estimatedCashbackFor(spendAmount);
+      final secondReward = spendAmount == null
+          ? second.totalCashback
+          : second.estimatedCashbackFor(spendAmount);
+      final rewardComparison = secondReward.compareTo(firstReward);
+      if (rewardComparison != 0) return rewardComparison;
+
+      final remainingComparison =
+          (second.remainingRewardLimit ?? double.infinity).compareTo(
+            first.remainingRewardLimit ?? double.infinity,
+          );
+      if (remainingComparison != 0) return remainingComparison;
+
+      final minimumSpendComparison = first.rewardRule.minimumSpend.compareTo(
+        second.rewardRule.minimumSpend,
       );
-      if (cashbackComparison != 0) {
-        return cashbackComparison;
+      if (minimumSpendComparison != 0) return minimumSpendComparison;
+
+      final expirationComparison = second.rewardRule.endDate.compareTo(
+        first.rewardRule.endDate,
+      );
+      if (expirationComparison != 0) return expirationComparison;
+
+      if (first.rewardRule.needRegistration !=
+          second.rewardRule.needRegistration) {
+        return first.rewardRule.needRegistration ? 1 : -1;
       }
-      return second.paymentBonus.compareTo(first.paymentBonus);
+
+      final paymentMethodComparison = second.paymentBonus.compareTo(
+        first.paymentBonus,
+      );
+      if (paymentMethodComparison != 0) return paymentMethodComparison;
+
+      return second.totalCashback.compareTo(first.totalCashback);
     });
 
     return recommendations;
@@ -124,7 +229,9 @@ class RecommendationService {
   ) {
     for (final rule in _rewardRules) {
       if (rule.cardId == cardId &&
-          storeName.contains(rule.merchantKeyword) &&
+          storeName.toLowerCase().contains(
+            rule.merchantKeyword.toLowerCase(),
+          ) &&
           rule.isActiveOn(today)) {
         return rule;
       }

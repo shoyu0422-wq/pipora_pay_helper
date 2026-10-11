@@ -6,11 +6,17 @@ class RecommendationList extends StatelessWidget {
   const RecommendationList({
     super.key,
     required this.recommendations,
+    this.spendAmount,
     this.onRecommendationTap,
   });
 
   final List<PaymentRecommendation> recommendations;
-  final ValueChanged<PaymentRecommendation>? onRecommendationTap;
+  final double? spendAmount;
+  final void Function(
+    PaymentRecommendation recommendation,
+    double? spendAmount,
+  )?
+  onRecommendationTap;
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +29,13 @@ class RecommendationList extends StatelessWidget {
             recommendation: topRecommendations[index],
             rank: index + 1,
             isHighlighted: index == 0,
+            spendAmount: spendAmount,
             onTap: onRecommendationTap == null
                 ? null
-                : () => onRecommendationTap!(topRecommendations[index]),
+                : () => onRecommendationTap!(
+                    topRecommendations[index],
+                    spendAmount,
+                  ),
           ),
           if (index < topRecommendations.length - 1) const SizedBox(height: 16),
         ],
